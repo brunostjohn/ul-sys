@@ -1,19 +1,52 @@
-use std::env;
 use std::path::PathBuf;
+use std::process::Command;
+use std::{env, fs};
 
 fn main() {
-    println!("cargo:rustc-flags=-L /usr/local/lib/");
-    println!("cargo:rustc-link-search=/usr/local/lib/");
+    let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
+    let ultralight_dir = out_dir.join("Ultralight");
 
-    if cfg!(target_os = "macos") {
-        println!("cargo:rustc-link-lib=dylib=Ultralight");
-        println!("cargo:rustc-link-lib=dylib=WebCore");
-        println!("cargo:rustc-link-lib=dylib=AppCore");
-    } else {
-        println!("cargo:rustc-link-lib=Ultralight");
-        println!("cargo:rustc-link-lib=WebCore");
-        println!("cargo:rustc-link-lib=AppCore");
+    println!("cargo:rerun-if-changed=build.rs");
+    println!("cargo:rerun-if-changed=wrapper");
+
+    if ultralight_dir.is_dir() {
+        fs::remove_dir_all(&ultralight_dir)
+            .expect("Could not remove already existing Ultralight repo");
     }
+
+    let git_status = Command::new("git")
+        .args(&["clone", "https://github.com/ultralight-ux/Ultralight"])
+        .current_dir(&out_dir)
+        .status()
+        .expect("Git is needed to retrieve the ultralight C++ library!");
+
+    assert!(git_status.success(), "Couldn't clone Ultralight library");
+
+    let git_status = Command::new("git")
+        .args(&[
+            "reset",
+            "--hard",
+            "36726f76a13fd0c3416a3cb2b2b323a101c00f2a",
+        ])
+        .current_dir(&ultralight_dir)
+        .status()
+        .expect("Git is needed to retrieve the ultralight C++ library!");
+
+    assert!(
+        git_status.success(),
+        "Could not reset git head to desired revision"
+    );
+
+    let dst = cmake::build(ultralight_dir.join("packager"));
+
+    println!(
+        "cargo:rustc-link-search=native={}",
+        dst.join("bin").display()
+    );
+
+    println!("cargo:rustc-link-lib=dylib=Ultralight");
+    println!("cargo:rustc-link-lib=dylib=WebCore");
+    println!("cargo:rustc-link-lib=dylib=AppCore");
 
     let bindings = bindgen::Builder::default()
         .header("wrapper/wrapper.h")
