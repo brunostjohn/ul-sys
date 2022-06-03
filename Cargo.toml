@@ -9,6 +9,11 @@ readme = "readme.md"
 repository = "https://github.com/psychonautwiki/rust-ul-sys"
 edition = "2018"
 
+[features]
+# link only Ultralight unique libraries, and not other dependancies that
+# may be available in the host system (such as libglib and libgio)
+only-ul-deps = []
+
 [build-dependencies]
 bindgen = "0.59.0"
 cmake = "0.1.48"

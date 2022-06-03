@@ -38,11 +38,44 @@ fn main() {
     );
 
     let dst = cmake::build(ultralight_dir.join("packager"));
+    let lib_bin_dir = dst.join("bin");
 
-    println!(
-        "cargo:rustc-link-search=native={}",
-        dst.join("bin").display()
-    );
+    if cfg!(feature = "only-ul-deps") {
+        let allowed_files = [
+            "Ultralight",
+            "UltralightCore",
+            "WebCore",
+            "AppCore",
+            "gstreamer-full-1.0",
+        ];
+        for entry in fs::read_dir(&lib_bin_dir).unwrap() {
+            if let Ok(entry) = entry {
+                let path = entry.path();
+
+                let mut allowed = false;
+                for allowed_file in &allowed_files {
+                    let filename = path.file_name().unwrap().to_str();
+                    if let Some(filename) = filename {
+                        if filename.contains(allowed_file) {
+                            allowed = true;
+                            break;
+                        }
+                    }
+                }
+
+                if !allowed
+                    && entry
+                        .file_type()
+                        .map(|f| f.is_file() || f.is_symlink())
+                        .unwrap_or(false)
+                {
+                    fs::remove_file(entry.path()).unwrap();
+                }
+            }
+        }
+    }
+
+    println!("cargo:rustc-link-search=native={}", lib_bin_dir.display());
 
     println!("cargo:rustc-link-lib=dylib=Ultralight");
     println!("cargo:rustc-link-lib=dylib=WebCore");
