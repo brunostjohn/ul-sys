@@ -15,7 +15,6 @@ edition = "2018"
 only-ul-deps = []
 
 [build-dependencies]
-bindgen = "0.59.0"
 cmake = "0.1.48"
 
 [dependencies]

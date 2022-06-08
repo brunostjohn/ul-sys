@@ -1,0 +1,1 @@
+bindgen --impl-debug --impl-partialeq  --generate-inline-functions --allowlist-var "^UL.*|JS.*|ul.*|WK.*" --allowlist-type "^UL.*|JS.*|ul.*|WK.*" --allowlist-function "^UL.*|JS.*|ul.*|WK.*" wrapper/wrapper.h  -o src/bindings.rs
