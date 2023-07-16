@@ -21,20 +21,20 @@ fn main() {
 
     assert!(git_status.success(), "Couldn't clone Ultralight library");
 
-    let git_status = Command::new("git")
-        .args(&[
-            "reset",
-            "--hard",
-            "36726f76a13fd0c3416a3cb2b2b323a101c00f2a",
-        ])
-        .current_dir(&ultralight_dir)
-        .status()
-        .expect("Git is needed to retrieve the ultralight C++ library!");
+    // let git_status = Command::new("git")
+    //     .args(&[
+    //         "reset",
+    //         "--hard",
+    //         "125b333",
+    //     ])
+    //     .current_dir(&ultralight_dir)
+    //     .status()
+    //     .expect("Git is needed to retrieve the ultralight C++ library!");
 
-    assert!(
-        git_status.success(),
-        "Could not reset git head to desired revision"
-    );
+    // assert!(
+    //     git_status.success(),
+    //     "Could not reset git head to desired revision"
+    // );
 
     let dst = cmake::build(ultralight_dir.join("packager"));
     let lib_bin_dir = dst.join("bin");
